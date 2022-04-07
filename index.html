@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Customers</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- CSS only -->
+    <link rel="stylesheet" href="styles.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  </head>
+  <body>
+    <h1>Customers</h1>
+    <hr />
+    <div class="contenedor">   
+    <form id="frm">
+      <div class="input-group mb-3 registro">
+      <input type="hidden" value="" name="Id" id="Id" />
+      
+      <label>Nombre: </label>
+      <input class="input-group-text" type="text" name="Nombre" id="Nombre" />
+  
+      <label>Telefono: </label>
+      <input  class="input-group-text" type="text" name="Telefono" id="Telefono" />
+    
+      <label>Email: </label>
+      <input class="input-group-text" type="text" name="Email" id="Email" />
+      
+      <label>Notes: </label>
+      <input class="input-group-text" type="text" name="Notes" id="Notes" />
+      <br />
+      <input type="button" value="Guardar"  class="btn btn-primary" onclick="Guardar();" />
+    </div>
+    </form>
+    <hr />
+    <div id="divLista" class="tabla"></div>
+  </div>
+  </body>
+</html>
+
+<script>
+  var url = 'https://localhost:44375/api/Fpt';
+
+  Get();
+
+  function Guardar() {
+    if (document.getElementById('Id').value != '') {
+      Edit();
+    } else {
+      Post();
+    }
+  }
+
+  function Post() {
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: document.getElementById('Nombre').value,
+        phone: document.getElementById('Telefono').value,
+        email: document.getElementById('Email').value,
+        notes: document.getElementById('Notes').value,
+      }),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(function (response) {
+        if (response.ok) {
+          return response.text();
+        } else {
+          alert('Error al ejecutar solicitud');
+        }
+      })
+      .then(function (Data) {
+        console.log(Data);
+        Get();
+        document.getElementById('Id').value = '';
+        document.getElementById('Nombre').value = '';
+        document.getElementById('Telefono').value = '';
+        document.getElementById('Email').value = '';
+        document.getElementById('Notes').value = '';
+      });
+  }
+
+  function Delete(id) {
+    fetch(url, {
+      method: 'DELETE',
+      body: JSON.stringify({
+        Id: id,
+      }),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(function (response) {
+        if (response.ok) {
+          return response.text();
+        } else {
+          alert('Error al ejecutar solicitud');
+        }
+      })
+      .then(function (Data) {
+        console.log(Data);
+        Get();
+      });
+  }
+
+  function OpenEdit(Id, Nombre, Edad) {
+    document.getElementById('Id').value = Id;
+    document.getElementById('Nombre').value = Nombre;
+    document.getElementById('Edad').value = Edad;
+  }
+
+  function Edit() {
+    fetch(url, {
+      method: 'PUT',
+      body: JSON.stringify({
+        Id: document.getElementById('Id').value,
+        Nombre: document.getElementById('Nombre').value,
+        Edad: document.getElementById('Edad').value,
+      }),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(function (response) {
+        if (response.ok) {
+          return response.text();
+        } else {
+          alert('Error al ejecutar solicitud');
+        }
+      })
+      .then(function (Data) {
+        console.log(Data);
+        Get();
+        document.getElementById('Id').value = '';
+        document.getElementById('Nombre').value = '';
+        document.getElementById('Edad').value = '';
+      });
+  }
+
+  function Get() {
+    fetch(url)
+      .then(function (response) {
+   
+        return response.json();
+      })
+      .then(function (Data) {
+        console.log(Data);
+        document.getElementById('divLista').innerHTML = '';
+        for (i = 0; i < Data.length; i++) {
+          let divElement = document.createElement('div');
+          let divSpan = document.createElement('span');
+          let divButtonDelete = document.createElement('button');
+          let divButtonEdit = document.createElement('button');
+          divSpan.innerHTML = Data[i].name + ' ' + Data[i].phone + ' ' +Data[i].email+ ' '+Data[i].notes; 
+          divButtonDelete.innerHTML = 'Eliminar';
+      
+          divButtonDelete.MiId = Data[i].id;
+          divButtonDelete.addEventListener('click', function (mibutton) {
+            Delete(mibutton.target.MiId);
+          });
+      
+          divElement.appendChild(divSpan);
+          divElement.appendChild(divButtonDelete);
+      
+          document.getElementById('divLista').appendChild(divElement);
+          divButtonDelete.classList.add('btn');
+          divButtonDelete.classList.add('btn-danger');
+        }
+      });
+  }
+</script>
